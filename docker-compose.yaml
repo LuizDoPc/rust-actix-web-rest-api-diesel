@@ -1,0 +1,35 @@
+version: '3.8'
+
+networks:
+  app-nw:
+    driver: bridge
+
+services:
+  db:
+    container_name: postgres
+    image: postgres:14.7-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: superuser
+      POSTGRES_PASSWORD: superpassword
+      POSTGRES_DB: todo
+
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    networks:
+      - app-nw
+  app-rust:
+    image: luizdopc/rust-crud:v3
+    container_name: app-rust
+    environment:
+       DATABASE_URL: "postgresql://superuser:superpassword@db:5432/todo"
+    ports:
+      - 8083:8081
+    depends_on:
+      - db
+    networks:
+      - app-nw
+volumes:
+  postgres-data:
